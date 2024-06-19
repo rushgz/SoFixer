@@ -751,14 +751,24 @@ void ElfRebuilder::relocate(uint8_t * base, Elf_Rel* rel, Elf_Addr dump_base) {
         case R_ARM_RELATIVE:
             *prel = *prel - dump_base;
             break;
+        case 0x401: //看到也有该type的重定位信息，其中也是导入表相关内容，所以这里也加上
         case 0x402:{
             auto syminfo = si.symtab[sym];
             if (syminfo.st_value != 0) {
                 *prel = syminfo.st_value;
             } else {
-                auto load_size = si.max_load - si.min_load;
+              auto load_size = si.max_load - si.min_load;
+              if (mImports.size() == 0){
                 *prel = load_size + external_pointer;
                 external_pointer += sizeof(*prel);
+              }else{ //这里如果获取了导入符号内容，并且不为空，则从保存的导入符号数组中获取导入表索引值
+                const char* symname = si.strtab + syminfo.st_name;
+                int nIndex = GetIndexOfImports(symname);
+                if (nIndex != -1){
+                  *prel = load_size + nIndex*sizeof(*prel);
+                }
+//                FLOGD("type:0x%x offset:0x%x -- symname:%s nIndex:%d\r\n", type, rel->r_offset, symname, nIndex);
+              }
             }
             break;
         }
@@ -777,8 +787,50 @@ void ElfRebuilder::relocate(uint8_t * base, Elf_Rel* rel, Elf_Addr dump_base) {
     }
 };
 
+int ElfRebuilder::GetIndexOfImports(std::string stringSymName){
+  int nIndex = 0;
+  for (auto& it : mImports){
+    std::string strImport = it;
+    if (strImport == stringSymName){
+      return nIndex;
+    }
+    nIndex++;
+  }
+  return -1;
+}
+
+
+//将导入表的符号按顺序保存在 std::vector<std::string>  mImports; 中，以便后面获得导入符号序号
+void ElfRebuilder::SaveImportsymNames(){
+  Elf_Sym* symtab = si.symtab;
+  const char* strtab = si.strtab;
+  int nIndex = 0;
+  bool start = false;
+  while (true){
+    Elf_Sym sym = symtab[nIndex];
+    if (sym.st_name == 0 && !start){
+      nIndex++;
+      continue;
+    }
+    start = true;
+    if (sym.st_name != 0 && sym.st_value!=0){
+      //开始进到非导入表的符号，退出
+      break;
+    }
+    const char* symname = strtab + sym.st_name;
+    mImports.push_back(symname);
+//    FLOGD("NO:%d %s \r\n", nIndex, symname);
+    nIndex++;
+  }
+
+}
+
 
 bool ElfRebuilder::RebuildRelocs() {
+
+    FLOGD("=======================Save_importsym_names=========================");
+    SaveImportsymNames();
+
     if(elf_reader_->dump_so_base_ == 0) return true;
     FLOGD("=======================RebuildRelocs=========================");
     if (si.plt_type == DT_REL) {

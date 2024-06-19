@@ -103,6 +103,11 @@ private:
     bool RebuildRelocs();
     bool RebuildFin();
 
+    //新增以下三个导入符号相关属性，以修复导入表的索引错乱的问题
+    int GetIndexOfImports(std::string stringSymName);
+    void SaveImportsymNames();
+    std::vector<std::string>  mImports;
+
   template <bool isRela>
   void relocate(uint8_t * base, Elf_Rel* rel, Elf_Addr dump_base);
     ObElfReader* elf_reader_;
