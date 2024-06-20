@@ -40,6 +40,7 @@ sofixer  -s soruce.so -o fix.so -m 0x0 -d
 ## 原理
 原理参考下面的文章  
 TK so修复参考[http://bbs.pediy.com/thread-191649.htm]
+
 * 修复shdr
 * 修复phdr
 * 修复重定位
@@ -50,4 +51,6 @@ TK so修复参考[http://bbs.pediy.com/thread-191649.htm]
 
 ## 修复
 
-在使用F8Left的SoFixer时，发现修复后的so中导入表有错乱（也是作者说的已知问题），对其进行了修复。测试修复包含2000多个导入函数的so时，导入函数没有再错乱，测试方法：同trace下来的函数调用做对比。
+在使用F8Left的SoFixer时，发现修复后的so中导入表有对不上号的问题（也是作者说的已知问题），对其进行了简单修复。测试修复包含2000多个导入函数的so时，导入函数都能对上号，测试方法：同trace下来的函数调用做对比。详情：[materials/FIXIMPORT.md](materials/FIXIMPORT.md) 。
+
+感谢F8Left大佬的分享，笔者简单修复相对作者原创，微不足道！
