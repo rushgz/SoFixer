@@ -800,7 +800,7 @@ int ElfRebuilder::GetIndexOfImports(std::string stringSymName){
 }
 
 
-//将导入表的符号按顺序保存在 std::vector<std::string>  mImports; 中，以便后面获得导入符号序号
+//将导入表的符号按顺序保存在 std::vector<std::string>  mImports; 中，以便后面获得导入符号序号 
 void ElfRebuilder::SaveImportsymNames(){
   Elf_Sym* symtab = si.symtab;
   const char* strtab = si.strtab;

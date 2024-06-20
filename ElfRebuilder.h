@@ -29,7 +29,7 @@ public:
     Elf_Addr min_load;
     Elf_Addr max_load;
 
-    uint32_t unused1 = 0;  // DO NOT USE, maintained for compatibility.
+    uint32_t unused1 = 0;  // DO NOT USE, maintained for compatibility.  
 
     Elf_Dyn* dynamic = nullptr;
     size_t dynamic_count = 0;
